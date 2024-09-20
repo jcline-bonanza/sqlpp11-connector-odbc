@@ -88,6 +88,10 @@ namespace sqlpp
 			size_t _count;
 		};
 	}
+
+	template <typename T, typename... Ts>
+	struct serializer_t;
+
 	template <typename First, typename... Args>
 	struct serializer_t<odbc::serializer_t, concat_t<First, Args...>>
 	{

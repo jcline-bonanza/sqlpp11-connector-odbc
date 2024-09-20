@@ -35,8 +35,8 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/CMake/SetVersion.cmake")
 option(SQLPP11_ODBC_DISABLE_SHARED "Disable making sqlpp11-connector-odbc shared library" Off)
 option(SQLPP11_ODBC_DISABLE_STATIC "Disable making sqlpp11-connector-odbc static library" Off)
 
-find_package(Sqlpp11 REQUIRED)
-include_directories(${HinnantDate_INCLUDE_DIR} $<TARGET_PROPERTY:sqlpp11,INTERFACE_INCLUDE_DIRECTORIES>)
+#find_package(Sqlpp11 REQUIRED)
+#include_directories(${HinnantDate_INCLUDE_DIR} $<TARGET_PROPERTY:sqlpp11,INTERFACE_INCLUDE_DIRECTORIES>)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules/")
 find_package(ODBC REQUIRED)
@@ -53,39 +53,17 @@ add_library(sqlpp11-odbc INTERFACE)
 
 target_link_libraries(sqlpp11-odbc INTERFACE sqlpp11 ${ODBC_LIBRARIES})
 
-install(TARGETS sqlpp11-odbc EXPORT Sqlpp11ConnectorODBCTargets)
-
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/version.h" DESTINATION include/sqlpp11/odbc/)
-
-if(NOT SQLPP11_ODBC_DISABLE_SHARED)
-  add_library(sqlpp11-odbc-shared SHARED
-	src/connection.cpp
-	src/bind_result.cpp
-	src/prepared_statement.cpp
-	src/detail/connection_handle.cpp)
-  target_include_directories(sqlpp11-odbc-shared INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-    )
-  target_link_libraries(sqlpp11-odbc-shared sqlpp11-odbc)
-  set_target_properties(sqlpp11-odbc-shared PROPERTIES OUTPUT_NAME sqlpp11-odbc)
-  install(TARGETS sqlpp11-odbc-shared EXPORT Sqlpp11ConnectorODBCTargets DESTINATION lib)
-endif()
-if(NOT SQLPP11_ODBC_DISABLE_STATIC)
-  add_library(sqlpp11-odbc-static STATIC
-	src/connection.cpp
-	src/bind_result.cpp
-	src/prepared_statement.cpp
-	src/detail/connection_handle.cpp)
-  target_include_directories(sqlpp11-odbc-static INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-    )
-  target_link_libraries(sqlpp11-odbc-static sqlpp11-odbc)
-  set_target_properties(sqlpp11-odbc-static PROPERTIES OUTPUT_NAME sqlpp11-odbc)
-  install(TARGETS sqlpp11-odbc-static EXPORT Sqlpp11ConnectorODBCTargets DESTINATION lib)
-endif()
+add_library(sqlpp11-odbc-static STATIC
+src/connection.cpp
+src/bind_result.cpp
+src/prepared_statement.cpp
+src/detail/connection_handle.cpp)
+target_include_directories(sqlpp11-odbc-static INTERFACE
+$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+$<INSTALL_INTERFACE:include>
+)
+target_link_libraries(sqlpp11-odbc-static sqlpp11-odbc)
+set_target_properties(sqlpp11-odbc-static PROPERTIES OUTPUT_NAME sqlpp11-odbc)
 
 include(CMakePackageConfigHelpers)
 
@@ -95,28 +73,7 @@ write_basic_package_version_file(
   COMPATIBILITY AnyNewerVersion
 )
 
-export(EXPORT Sqlpp11ConnectorODBCTargets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/CMake/Sqlpp11ConnectorODBCTargets.cmake"
-)
-
 configure_file(CMake/Sqlpp11ConnectorODBCConfig.cmake
   "${CMAKE_CURRENT_BINARY_DIR}/CMake/Sqlpp11ConnectorODBCConfig.cmake"
   COPYONLY
-)
-
-set(ConfigPackageLocation lib/CMake/Sqlpp11ConnectorODBC)
-install(EXPORT Sqlpp11ConnectorODBCTargets
-  FILE
-    Sqlpp11ConnectorODBCTargets.cmake
-  DESTINATION
-    ${ConfigPackageLocation}
-)
-
-install(
-  FILES
-    "CMake/Sqlpp11ConnectorODBCConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/CMake/Sqlpp11ConnectorODBCConfigVersion.cmake"
-    "CMake/Modules/FindODBC.cmake"
-  DESTINATION
-    ${ConfigPackageLocation}
 )
